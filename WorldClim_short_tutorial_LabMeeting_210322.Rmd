@@ -1,0 +1,142 @@
+---
+title: "WorldClim_tutorial for Jankowski Lab Meeting"
+author: "Santiago David"
+date: "21/03/2022"
+output: github_document
+always_allow_html: yes
+---
+
+This file is a short tutorial for extracting Bioclimatic variables from [WorldClim](https://www.worldclim.org/data/bioclim.html) for a set of coordinates.
+
+Most of the code is product of an ongoing collaboration with undergraduate student Juan Carlos Arias from Universidad Jorge Tadeo Lozano, Colombia. 
+In this collaboration we are exploring a morphologial database of Paramo birds to test a set of questions about community composition and diversity across paramos.
+
+Reference: Montoya, P., Gonzalez, M. A., Tenorio, E. A., López‐Ordóñez, J. P., Pinto Gómez, A., Cueva, D., ... & Salgado‐Negret, B. (2018). [A morphological database for 606 Colombian bird species](https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/ecy.2368)
+
+
+### What's WorldClim
+
+WorldClim is a database of high spatial resolution global weather and climate data. These data are available at four different spatial resolutions between 30 seconds (~1 km2) to 10 minutes (~340 km2) and for historical (near current) and future conditions. 
+Depending on your question you might need data per month or as an average for the years period (1970-2000).
+This dataset is widely used and currently has more than 12000 citations on its [first version](https://rmets.onlinelibrary.wiley.com/doi/abs/10.1002/joc.1276) and more than 3000 on its [second](https://rmets.onlinelibrary.wiley.com/doi/abs/10.1002/joc.5086). However, there are other global datasets for climatic variables such as [CMCC-BioClimInd](https://www.nature.com/articles/s41597-020-00726-5).
+
+### Data and packages
+
+First, we load the packages
+```{r setup, include=FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+library(raster)
+library(sp)
+library(leaflet)
+```
+
+Now we load the dataset
+```{r message=FALSE, warning=FALSE}
+data <- read_csv("lacocha.csv")
+```
+
+Quick inspection of this dataset
+```{r}
+str(data)
+dim(data)
+```
+
+This is a subset of the data in Montoya etal. that contains the observations for a single Paramo Complex and all the variables in the original dataset. The original dataset contains 9892 entries of 38 variables and includes field museum specimens and field observations. There is a lot of information on morphological variables, but what we need is the spatial information (i.e coordinates).
+
+
+```{r}
+head(data)
+```
+
+We use Tidyverse to explore how many localities and combinations of longitude, latitude and elevation we have
+```{r}
+data %>% 
+  distinct(Locality, Elevation, decimalLongitude, decimalLatitude)
+```
+
+Now, we can create a subset of unique localities by extracting a distinct combination of longitudes and latitudes, and keeping other relevant geographic information
+```{r}
+coordinates <- data %>% 
+  distinct(decimalLongitude, decimalLatitude, Elevation, ParamoComplex, Department, Locality)
+head(coordinates)
+```
+
+We can use **leaflet** to quickly visualize these localities in a map and confirm that they are where we think they are
+
+```{r}
+leaflet(data = coordinates) %>% 
+  addProviderTiles(providers$Esri.NatGeoWorldMap) %>% 
+  addCircleMarkers(~decimalLongitude, ~decimalLatitude) %>% 
+  addRectangles(
+    lng1=min(coordinates$decimalLongitude), lat1=min(coordinates$decimalLatitude),
+    lng2=max(coordinates$decimalLongitude), lat2=max(coordinates$decimalLatitude)
+  )
+```
+
+### WorldClim data for these coordinates
+
+Now, we have a set of coordinates that we need WorldClim data for. 
+
+We can use package **raster** to download raster data from Worldclim using the `raster::getData` function. You can read more documentation [here](https://www.rdocumentation.org/packages/raster/versions/3.5-15/topics/getData).
+
+To download the data we need to supply which database we want, the variable(s) we are interested in, the resolution (in minutes), and a coordinate that is within the general area we are interested in. We do this, because we just need the chunk (or tile) of the WorldClim dataset that is relevant to our set of coordinates. 
+
+In our case, I'm interested in the lowest resolution possible that I can get data for, in worldclim that means 30 seconds (or 0.5). Also I want all 19 variables averaged annually not the montly data for a single variable (i.e. `var = "bio"`. Finally, for this resolution I must provide a reference lon and lat. I will do the same to extract elevation data from WorldClim for this same tile/resolution.
+
+```{r}
+climate <- getData("worldclim", var = "bio", res = 0.5, lon = -77, lat = 1)
+elevation <- getData("worldclim", var="alt", res=0.5, lon=-77, lat=1)
+```
+
+This last step downloaded the data into our project folder as a zip file, and also create r objects for them in our environment. What kind of objects?
+
+```{r}
+class(climate)
+unlist(climate)
+```
+
+
+Now, we can use this to visualize, for example, the Mean Temperature in the specific geographic tile we extracted from WorldClim
+```{r}
+plot(climate$bio1_23, main = "Annual Mean Temperature")
+```
+
+You will notice that temperatures are in the order of ~100's C. This is because WorldClim store temperatures as C*10 to reduce download time and file size. So, be careful and transform temperatures when needed.
+
+visualize the elevation profile
+```{r}
+plot(elevation)
+```
+
+I can also visualize this for the specific set of coordinates we have, which is a smaller "tile" than the one we extracted
+```{r}
+plot(elevation, xlab="Longitude", ylab="Latitude", 
+     ylim=c(min(coordinates$decimalLatitude), max(coordinates$decimalLatitude)),
+     xlim=c(min(coordinates$decimalLongitude), max(coordinates$decimalLongitude)))
+```
+
+
+However what we need is the specific climate data for each one of our set of coordinates. So, the first step here is to create spatial projections of our flat set of coordinates so that they are in a similar format to that of the climate data.
+
+```{r}
+points <- SpatialPoints(coordinates[,c("decimalLongitude","decimalLatitude")])
+unlist(points)
+```
+
+Now, we extract the 19 variables for each set of coordinates in our `points`. Remember we have 15 unique combinations of coordinates.
+
+```{r}
+variables <- extract(climate, points)
+```
+
+And finally we bind the climatic variables to the coordinates subset
+```{r}
+env_data <- cbind.data.frame(coordinates, variables)
+print(env_data)
+```
+
+We have now a new dataset with the localities information from the original dataset and bioclimatic variables for each coordinates.
+
+**NOTE**: There are many examples and information online to deal with WorldClim data in R. I recommend exploring these two [here](https://emilypiche.github.io/BIO381/raster.html) and [here](https://www.gis-blog.com/r-raster-data-acquisition/) from where I partially reproduced code for this short exercise.
+
+
