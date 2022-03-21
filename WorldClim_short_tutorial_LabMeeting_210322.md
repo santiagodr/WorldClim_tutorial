@@ -35,7 +35,50 @@ However, there are other global datasets for climatic variables such as
 
 ### Data and packages
 
-First, we load the packages
+First, we load the
+    packages
+
+``` r
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+    ## Warning: Can't find generic `sew` in package knitr to register S3 method.
+    ## ℹ This message is only shown to developers using devtools.
+    ## ℹ Do you need to update knitr to the latest version?
+
+    ## Warning: package 'ggplot2' was built under R version 3.6.2
+
+    ## Warning: package 'tibble' was built under R version 3.6.2
+
+    ## Warning: package 'dplyr' was built under R version 3.6.2
+
+``` r
+library(raster)
+```
+
+    ## Warning: package 'raster' was built under R version 3.6.2
+
+    ## Loading required package: sp
+
+    ## Warning: package 'sp' was built under R version 3.6.2
+
+    ## 
+    ## Attaching package: 'raster'
+
+    ## The following object is masked from 'package:dplyr':
+    ## 
+    ##     select
+
+    ## The following object is masked from 'package:tidyr':
+    ## 
+    ##     extract
+
+``` r
+library(sp)
+library(leaflet)
+```
+
+    ## Warning: package 'leaflet' was built under R version 3.6.2
 
 Now we load the dataset
 
@@ -227,11 +270,11 @@ leaflet(data = coordinates) %>%
 
 <!--html_preserve-->
 
-<div id="htmlwidget-b480f3d27b584770ebef" class="leaflet html-widget" style="width:672px;height:480px;">
+<div id="htmlwidget-3b2690cd121bacd96273" class="leaflet html-widget" style="width:672px;height:480px;">
 
 </div>
 
-<script type="application/json" data-for="htmlwidget-b480f3d27b584770ebef">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addProviderTiles","args":["Esri.NatGeoWorldMap",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addCircleMarkers","args":[[0.99775,0.982361,1.271922,1.274972,0.832639,0.839306,1.120361,0.976694,1.119194,0.969972,0.843194,0.842222,1.121556,1.271042,0.987361],[-77.181333,-77.295139,-77.246667,-77.242117,-77.352111,-77.361278,-77.215917,-77.290028,-77.218361,-77.288472,-77.396722,-77.366861,-77.222194,-77.238869,-77.293528],10,null,null,{"interactive":true,"className":"","stroke":true,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2},null,null,null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addRectangles","args":[0.832639,-77.396722,1.274972,-77.181333,null,null,{"interactive":true,"className":"","stroke":true,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[0.832639,1.274972],"lng":[-77.396722,-77.181333]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-3b2690cd121bacd96273">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addProviderTiles","args":["Esri.NatGeoWorldMap",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addCircleMarkers","args":[[0.99775,0.982361,1.271922,1.274972,0.832639,0.839306,1.120361,0.976694,1.119194,0.969972,0.843194,0.842222,1.121556,1.271042,0.987361],[-77.181333,-77.295139,-77.246667,-77.242117,-77.352111,-77.361278,-77.215917,-77.290028,-77.218361,-77.288472,-77.396722,-77.366861,-77.222194,-77.238869,-77.293528],10,null,null,{"interactive":true,"className":"","stroke":true,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2},null,null,null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addRectangles","args":[0.832639,-77.396722,1.274972,-77.181333,null,null,{"interactive":true,"className":"","stroke":true,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[0.832639,1.274972],"lng":[-77.396722,-77.181333]}},"evals":[],"jsHooks":[]}</script>
 
 <!--/html_preserve-->
 
@@ -293,7 +336,7 @@ WorldClim
 plot(climate$bio1_23, main = "Annual Mean Temperature")
 ```
 
-![](WorldClim_short_tutorial_LabMeeting_210322_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](WorldClim_short_tutorial_LabMeeting_210322_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 You will notice that temperatures are in the order of ~100’s C. This is
 because WorldClim store temperatures as C\*10 to reduce download time
@@ -306,7 +349,7 @@ profile
 plot(elevation)
 ```
 
-![](WorldClim_short_tutorial_LabMeeting_210322_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](WorldClim_short_tutorial_LabMeeting_210322_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 I can also visualize this for the specific set of coordinates we have,
 which is a smaller “tile” than the one we extracted
@@ -317,7 +360,7 @@ plot(elevation, xlab="Longitude", ylab="Latitude",
      xlim=c(min(coordinates$decimalLongitude), max(coordinates$decimalLongitude)))
 ```
 
-![](WorldClim_short_tutorial_LabMeeting_210322_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](WorldClim_short_tutorial_LabMeeting_210322_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 However what we need is the specific climate data for each one of our
 set of coordinates. So, the first step here is to create spatial

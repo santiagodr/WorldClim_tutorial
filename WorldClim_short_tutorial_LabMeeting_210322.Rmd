@@ -23,7 +23,7 @@ This dataset is widely used and currently has more than 12000 citations on its [
 ### Data and packages
 
 First, we load the packages
-```{r setup, include=FALSE}
+```{r}
 suppressPackageStartupMessages(library(tidyverse))
 library(raster)
 library(sp)
